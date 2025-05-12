@@ -9,6 +9,7 @@
 \usetikzlibrary{factory.robot.arm}
 \usetikzlibrary{factory.safety.curtain}
 \usetikzlibrary{factory.safety.estop}
+\usetikzlibrary{factory.safety.fence}
 \usetikzlibrary{factory.safety.lidar}
 \usetikzlibrary{factory.sensor.camera}
 \usetikzlibrary{factory.sensor.proximity}
@@ -17,6 +18,9 @@
 \begin{document}
 
 \begin{tikzpicture}[scale=1]
+
+  \addFence{1}{8}{10}{yellow}
+  \drawFence{1}{0}{1}{0}
 
   \addConveyor{1}{4}{1.25}{gray}
   \drawConveyor{1}{1.5}{-1}{90}

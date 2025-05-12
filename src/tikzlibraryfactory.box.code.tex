@@ -53,7 +53,7 @@
         \pgfmathsetmacro{\bottom@xend}{\scaleFactor*\item@xend}%
         \pgfmathsetmacro{\bottom@yend}{\scaleFactor*\item@yend}%
     
-        \draw[draw=black, line width=0.3pt] (\bottom@xorigin, \bottom@yorigin) rectangle (\bottom@xend, (\bottom@yend);%
+        \draw[draw=black, line width=0.3pt] (\bottom@xorigin, \bottom@yorigin) rectangle (\bottom@xend, \bottom@yend);%
         \draw[black, thick] (\bottom@xorigin, \bottom@yorigin) -- (\item@xorigin, \item@yorigin);
         \draw[black, thick] (\bottom@xorigin, \bottom@yend) -- (\item@xorigin, \item@yend);
         \draw[black, thick] (\bottom@xend, \bottom@yorigin) -- (\item@xend, \item@yorigin);
