@@ -1,0 +1,60 @@
+\documentclass{article}
+\usepackage{tikz}
+\usepackage{pgf}
+\usetikzlibrary{factory.box}
+\usetikzlibrary{factory.cnc}
+\usetikzlibrary{factory.conveyor}
+\usetikzlibrary{factory.pallet}
+\usetikzlibrary{factory.robot.agv}
+\usetikzlibrary{factory.robot.arm}
+\usetikzlibrary{factory.safety.curtain}
+\usetikzlibrary{factory.safety.estop}
+\usetikzlibrary{factory.safety.lidar}
+\usetikzlibrary{factory.sensor.camera}
+\usetikzlibrary{factory.sensor.proximity}
+\usetikzlibrary{factory.sensor.loadcell}
+
+\begin{document}
+
+\begin{tikzpicture}[scale=1]
+
+  \addConveyor{1}{4}{1.25}{gray}
+  \drawConveyor{1}{1.5}{-1}{90}
+  \drawConveyor{1}{-1.875}{3.5}{0}
+
+  \addProximitySensor{1}{red}{1.45}
+  \drawProximitySensor{1}{2.5}{-0.75}{180}
+  
+  \addLoadcell{1}{blue}{1.3}
+  \drawLoadcell{1}{3}{-2.2}{180}
+
+  \addCamera{1}{yellow}{2}
+  \drawCamera{1}{1}{5.5}{270}
+
+  \setArmDHParameters{R1}{1}{60}{1.25}{0}
+  \setArmDHParameters{R1}{2}{280}{1.5}{0}
+  \setArmDHParameters{R1}{3}{300}{0.5}{0}
+  \drawRobotArm[id=R1, x=0, y=0, nJoints=3, linkColor=orange, isShading=true, isTool=true, isWorkspace=false, workspaceRadius=0]
+
+  \addCNC{1}{4}{2}{red}
+  \drawCNC{1}{-2}{0}{90}
+
+  \addPallet{1}{2}{2}{brown}
+  \drawPallet{1}{1.5}{-2.2}{0}
+
+  \addBox{1}{1}{1}{brown}{true}
+  \drawBox{1}{1.5}{-1.8}{0}
+
+  \addAGV{1}{2.5}{1.5}{white}{-45}
+  \drawAGV{1}{3}{-4.5}{0}
+  \addEStop{1}{yellow}{0}
+  \drawEStop{1}{2}{-4.8}{0}
+  \addLidar{1}{yellow}{5.5}
+  \drawLidar{1}{4}{-4.5}{0}
+
+  \addCurtain{1}{yellow}{5.5}
+  \drawCurtain{1}{3}{-0.75}{90}
+  
+\end{tikzpicture}
+
+\end{document}

@@ -1,0 +1,66 @@
+% tikzlibraryfactory.box.code.tex
+\makeatletter
+% If \ProvidesTikzLibrary isn't defined yet, define it as an alias for \ProvidesPackage
+\@ifundefined{ProvidesTikzLibrary}{%
+  \def\ProvidesTikzLibrary#1[#2]{%
+    \ProvidesFile{tikzlibrary#1}[#2]%
+  }%
+}{}
+\makeatother
+
+\ProvidesTikzLibrary{factory.box}[2025/05/05 v1.0 Factory box library]
+
+\RequirePackage{tikz}
+\RequirePackage{ifthen}
+\usetikzlibrary{factory.item}
+\usetikzlibrary{calc}
+
+\makeatletter
+
+% \brief Add a new box definition
+% \param #1 : box ID
+% \param #2 : box length
+% \param #3 : box width
+% \param #4 : box color
+% \param #5 : is box opened
+\newcommand{\addBox}[5]{%
+  \addItem{box@#1}{#2}{#3}{#4}
+  \expandafter\gdef\csname box@#1@isOpened\endcsname{#5}%
+}%
+
+% \brief Draw a box given a specific ID definition
+% \param #1 : box ID
+% \param #2 : box x-axis position
+% \param #3 : box y-axis position
+% \param #4 : box orientation [in degrees]
+\newcommand{\drawBox}[4]{%
+
+  % Get all parameters
+  \drawItem{box@#1}{#2}{#3}{#4}
+  \edef\box@isOpened{\csname box@#1@isOpened\endcsname}%
+
+  % Draw item
+  \begin{scope}[shift={(\item@x,\item@y)}, rotate=\item@orientation]
+
+    % Draw frame
+    \draw[fill=\item@color, draw=black, line width=0.3pt] (\item@xorigin, \item@yorigin) rectangle (\item@xend, (\item@yend);%
+
+    \ifthenelse{\equal{\box@isOpened}{true}}{%
+
+        \pgfmathsetmacro{\scaleFactor}{0.8}
+        \pgfmathsetmacro{\bottom@xorigin}{\scaleFactor*\item@xorigin}%
+        \pgfmathsetmacro{\bottom@yorigin}{\scaleFactor*\item@yorigin}%
+        \pgfmathsetmacro{\bottom@xend}{\scaleFactor*\item@xend}%
+        \pgfmathsetmacro{\bottom@yend}{\scaleFactor*\item@yend}%
+    
+        \draw[draw=black, line width=0.3pt] (\bottom@xorigin, \bottom@yorigin) rectangle (\bottom@xend, (\bottom@yend);%
+        \draw[black, thick] (\bottom@xorigin, \bottom@yorigin) -- (\item@xorigin, \item@yorigin);
+        \draw[black, thick] (\bottom@xorigin, \bottom@yend) -- (\item@xorigin, \item@yend);
+        \draw[black, thick] (\bottom@xend, \bottom@yorigin) -- (\item@xend, \item@yorigin);
+        \draw[black, thick] (\bottom@xend, \bottom@yend) -- (\item@xend, \item@yend);
+    }{}%
+
+  \end{scope}%
+}
+
+\makeatother

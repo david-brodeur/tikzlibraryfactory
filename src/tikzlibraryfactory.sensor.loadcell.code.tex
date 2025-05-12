@@ -1,0 +1,55 @@
+% tikzlibraryfactory.sensor.loadcell.code.tex
+\makeatletter
+% If \ProvidesTikzLibrary isn't defined yet, define it as an alias for \ProvidesPackage
+\@ifundefined{ProvidesTikzLibrary}{%
+  \def\ProvidesTikzLibrary#1[#2]{%
+    \ProvidesFile{tikzlibrary#1}[#2]%
+  }%
+}{}
+\makeatother
+
+\ProvidesTikzLibrary{factory.sensor.loadcell}[2025/05/05 v1.0 Factory loadcell sensor library]
+
+\RequirePackage{tikz}
+\usetikzlibrary{factory.sensor}
+
+\makeatletter
+
+% \brief Add a new loadcell sensor definition
+% \param #1 : sensor ID
+% \param #2 : sensor color
+% \param #3 : sensor range
+\newcommand{\addLoadcell}[3]{%
+  \addSensor{loadcell@#1}{0.4}{0.4}{#2}{#3}
+}%
+
+% \brief Draw a loadcell sensor given a specific ID definition
+% \param #1 : sensor ID
+% \param #2 : sensor x-axis position
+% \param #3 : sensor y-axis position
+% \param #4 : sensor orientation [in degrees]
+\newcommand{\drawLoadcell}[4]{%
+
+  \drawSensor{loadcell@#1}{#2}{#3}{#4}
+
+  % Draw proximity sensor
+  \begin{scope}[shift={(\item@x,\item@y)}, rotate=\item@orientation]
+
+    % Draw sensor
+    \draw[fill=black!60, draw=black, line width=0.3pt] 
+      (\item@xorigin, \item@yorigin) rectangle (\item@xend, \item@yend);%
+    \draw[draw=black, ultra thick] 
+      (\signal@xorigin, \signal@yorigin) -- (\signal@xend, \signal@yend);%
+    \draw[fill=black, draw=black, line width=0.3pt] 
+      (\signal@xend, \signal@yend) circle (0.2*\item@width);%
+
+    % Draw signal
+    \draw[draw=\item@color!60, ultra thick] 
+      (\signal@xend, \signal@yend) circle (0.5*\item@width);%
+    \draw[draw=\item@color!60, ultra thick] 
+      (\signal@xend, \signal@yend) circle (0.8*\item@width);%
+    
+  \end{scope}%
+}
+
+\makeatother

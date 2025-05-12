@@ -1,0 +1,169 @@
+% tikzlibraryfactory.pallet.code.tex
+\makeatletter
+% If \ProvidesTikzLibrary isn't defined yet, define it as an alias for \ProvidesPackage
+\@ifundefined{ProvidesTikzLibrary}{%
+  \def\ProvidesTikzLibrary#1[#2]{%
+    \ProvidesFile{tikzlibrary#1}[#2]%
+  }%
+}{}
+\makeatother
+
+\ProvidesTikzLibrary{factory.robot.arm}[2025/05/05 v1.0 Factory robot arm library]
+
+\RequirePackage{tikz}
+\RequirePackage{xfp}
+\RequirePackage{ifthen}
+\RequirePackage{pgf}
+\usetikzlibrary{calc}
+\usetikzlibrary{shadings}
+
+\makeatletter
+
+% ==========
+% PARAMÈTRES GLOBAUX
+% ==========
+
+\pgfkeys{
+  /robot/.is family,
+  /robot,
+  id/.store in=\id, id/.initial=robot,
+  x/.store in=\x, x/.initial=0.0,
+  y/.store in=\y, y/.initial=0.0,
+  nJoints/.store in=\nJoints, nJoints/.initial=2,
+  linkColor/.store in=\linkColor, linkColor/.initial=white,
+  isShading/.store in=\isShading, isShading/.initial=0,
+  isTool/.store in=\isTool, isTool/.initial=1,
+  isWorkspace/.store in=\isWorkspace, isWorkspace/.initial=0,
+  workspaceRadius/.store in=\workspaceRadius, workspaceRadius/.initial=0
+}
+
+\newcommand{\linkThickness}{0.4}       % Épaisseur des bras
+\newcommand{\linkCornerRadius}{3.5pt}  % Rayon des coins arrondis
+\newcommand{\robotBaseRadius}{0.35}    % Rayon de la base
+
+% ==========
+% CONFIGURATION ROBOT
+% ==========
+
+% Enregistrer les paramètres DH : theta et a
+\newcommand{\setArmDHParameters}[5]{%
+  \expandafter\def\csname theta@#1@#2\endcsname{#3}%
+  \expandafter\def\csname a@#1@#2\endcsname{#4}%
+}
+
+% Initialiser un robot à une position donnée
+\newcommand{\initRobotArm}[3]{%
+  \expandafter\def\csname xbase@#1\endcsname{#2}%
+  \expandafter\def\csname ybase@#1\endcsname{#3}%
+  \expandafter\def\csname xprev@#1\endcsname{#2}%
+  \expandafter\def\csname yprev@#1\endcsname{#3}%
+  \expandafter\def\csname angleprev@#1\endcsname{0}%
+}
+
+% Calculer la position du lien courant
+\newcommand{\computeArmLinkPosition}[3]{%
+  \pgfmathsetmacro{\theta}{\csname theta@#1@#2\endcsname}%
+  \pgfmathsetmacro{\a}{\csname a@#1@#2\endcsname}%
+  \pgfmathsetmacro{\angleprev}{\csname angleprev@#1\endcsname}%
+  \pgfmathsetmacro{\xprev}{\csname xprev@#1\endcsname}%
+  \pgfmathsetmacro{\yprev}{\csname yprev@#1\endcsname}%
+  \pgfmathsetmacro{\angletot}{\angleprev + \theta}%
+  \pgfmathsetmacro{\xnew}{\xprev + (\a - #3) * cos(\angletot)}%
+  \pgfmathsetmacro{\ynew}{\yprev + (\a - #3) * sin(\angletot)}%
+}
+
+% Mettre à jour les coordonnées après chaque lien
+\newcommand{\updateRobotArmState}[1]{%
+  \expandafter\xdef\csname xprev@#1\endcsname{\xnew}%
+  \expandafter\xdef\csname yprev@#1\endcsname{\ynew}%
+  \expandafter\xdef\csname angleprev@#1\endcsname{\angletot}%
+}
+
+% Dessiner un lien
+\newcommand{\drawArmLink}[5]{%
+  \computeArmLinkPosition{#1}{#2}{0.25}%
+  \pgfmathsetmacro{\theta}{\csname theta@#1@#2\endcsname}%
+  \pgfmathsetmacro{\a}{\csname a@#1@#2\endcsname}%
+  \pgfmathsetmacro{\midx}{(\xprev+\xnew)/2}%
+  \pgfmathsetmacro{\midy}{(\yprev+\ynew)/2}%
+
+  \begin{scope}
+    \pgftransformshift{\pgfpoint{\midx cm}{\midy cm}}%
+    \pgftransformrotate{\angleprev + \theta}%
+    \ifthenelse{\equal{#4}{true}}{%
+      \shade[rounded corners=\linkCornerRadius, left color=#3!80, right color=#3!20, draw=black, line width=0.3pt] (-\a/2, -#5/2) rectangle (\a/2, #5/2);%
+    }{%
+      \draw[rounded corners=\linkCornerRadius, fill=#3!60, draw=black, line width=0.3pt] (-\a/2, -#5/2) rectangle (\a/2, #5/2);%
+    }%
+  \end{scope}
+
+  \updateRobotArmState{#1}%
+}
+
+% Dessiner la base
+\newcommand{\drawArmBase}[3]{%
+  \draw[fill=gray!50, draw=black] (#2,#3) circle (#1);
+}
+
+% Dessiner une pince
+\newcommand{\drawArmGripper}[1]{%
+  \pgfmathsetmacro{\gripperSize}{0.1}%
+  \pgfmathsetmacro{\gripperLength}{0.5}%
+  \pgfmathsetmacro{\a}{0.4}%
+
+  \pgfmathsetmacro{\angleprev}{\csname angleprev@#1\endcsname}%
+  \pgfmathsetmacro{\xprev}{\csname xprev@#1\endcsname}%
+  \pgfmathsetmacro{\yprev}{\csname yprev@#1\endcsname}%
+
+  \pgfmathsetmacro{\xnew}{\xprev + (\a - \gripperSize) * cos(\angleprev)}%
+  \pgfmathsetmacro{\ynew}{\yprev + (\a - \gripperSize) * sin(\angleprev)}%
+
+  \pgfmathsetmacro{\midx}{(\xprev+\xnew)/2}%
+  \pgfmathsetmacro{\midy}{(\yprev+\ynew)/2}%
+
+  \begin{scope}
+    \pgftransformshift{\pgfpoint{\midx cm}{\midy cm}}%
+    \pgftransformrotate{\angleprev}%
+    \draw[fill=gray!50, draw=black, line width=0.3pt] (-\gripperSize/2, -\gripperLength/2) rectangle (\gripperSize/2, \gripperLength/2);%
+    \draw[fill=gray!50, draw=black, line width=0.3pt] (\gripperSize/2, -\gripperLength/2+0.05) rectangle (\gripperSize/2+0.3, -\gripperLength/2+0.15);%
+    \draw[fill=gray!50, draw=black, line width=0.3pt] (\gripperSize/2, \gripperLength/2-0.05) rectangle (\gripperSize/2+0.3, \gripperLength/2-0.15);%
+  \end{scope}%
+
+  \expandafter\xdef\csname xprev@#1\endcsname{\xnew}%
+  \expandafter\xdef\csname yprev@#1\endcsname{\ynew}%
+  \expandafter\xdef\csname angleprev@#1\endcsname{\angleprev}%
+}
+
+% Dessin complet d’un robot
+\newcommand{\drawRobotArm}[1][]{%
+  % Récupération des paramètres via les clés /robot:
+  %   \id, \x, \y, \nJoints, \linkColor, \isShading, \isTool,
+  %   \isWorkspace, \workspaceRadius
+  \pgfkeys{/robot, #1}%
+  \initRobotArm{\id}{\x}{\y}%
+  \drawArmBase{\robotBaseRadius}{\x}{\y}%
+  
+  % Initialisation d'une variable globale pour calculer le rayon total
+  \xdef\radiusAuto{0}%
+  
+  \foreach \i in {1,...,\nJoints} {%
+    \pgfmathsetmacro{\a}{\csname a@\id @\i\endcsname}%
+    \pgfmathparse{\radiusAuto + \a}%
+    \xdef\radiusAuto{\pgfmathresult}%
+    \drawArmLink{\id}{\i}{\linkColor}{\isShading}{\linkThickness}%
+  }%
+  
+  % Dessiner la pince si activée
+  \ifthenelse{\equal{\isTool}{true}}{%
+    \drawArmGripper{\id}%
+  }{}%
+  
+  % Dessiner le workspace s'il est activé, en sélectionnant le rayon approprié
+  \ifthenelse{\equal{\isWorkspace}{true}}{%
+    \pgfmathparse{\workspaceRadius == 0 ? \radiusAuto : \workspaceRadius}%
+    \let\radiusToUse\pgfmathresult%
+    \draw[gray, dashed] (\x,\y) circle (\radiusToUse);%
+  }{}%
+}
+
+\makeatother

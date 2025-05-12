@@ -1,0 +1,65 @@
+% tikzlibraryfactory.pallet.code.tex
+\makeatletter
+% If \ProvidesTikzLibrary isn't defined yet, define it as an alias for \ProvidesPackage
+\@ifundefined{ProvidesTikzLibrary}{%
+  \def\ProvidesTikzLibrary#1[#2]{%
+    \ProvidesFile{tikzlibrary#1}[#2]%
+  }%
+}{}
+\makeatother
+
+\ProvidesTikzLibrary{factory.pallet}[2025/05/05 v1.0 Factory pallet library]
+
+\RequirePackage{tikz}
+\usetikzlibrary{factory.item}
+\usetikzlibrary{calc}
+
+\makeatletter
+
+% \brief Add a new pallet definition
+% \param #1 : pallet ID
+% \param #2 : pallet length
+% \param #3 : pallet width
+% \param #4 : pallet color
+\newcommand{\addPallet}[4]{%
+  \addItem{pallet@#1}{#2}{#3}{#4}
+}%
+
+% \brief Draw a pallet given a specific ID definition
+% \param #1 : pallet ID
+% \param #2 : pallet x-axis position
+% \param #3 : pallet y-axis position
+% \param #4 : pallet orientation [in degrees]
+\newcommand{\drawPallet}[4]{%
+
+  % Get all parameters
+  \drawItem{pallet@#1}{#2}{#3}{#4}
+  
+  % Compute wooden boards coordinates
+  \pgfmathsetmacro{\step}{0.5}%
+  \pgfmathsetmacro{\woodenBoardWidth}{3 * \step / 5}%
+  \pgfmathsetmacro{\halfWoodenBoardWidth}{\woodenBoardWidth / 2}%
+
+  % Draw pallet
+  \begin{scope}[shift={(\item@x,\item@y)}, rotate=\item@orientation]
+
+    \draw[draw=black, line width=2pt]
+        ($(\item@xorigin, \item@yorigin) + (- \halfWoodenBoardWidth, 0)$) rectangle ($(\item@xend, \item@yend) + (\halfWoodenBoardWidth, 0)$);%
+
+    % Draw each wooden board
+    \pgfmathsetmacro{\N}{\item@width / \step - 1}%
+    \foreach \i in {1,...,\N} {
+      \draw[fill=\item@color!60, draw=black, line width=0.3pt]
+        ($(\item@xorigin, \item@yorigin) + (0, \i*\step - \woodenBoardWidth/2)$) rectangle ($(\item@xend, \item@yorigin) + (0, \i*\step + \woodenBoardWidth/2)$);%
+    }
+
+    \pgfmathsetmacro{\N}{\item@length / \step}%
+    \foreach \i in {0,...,\N} {
+      \draw[fill=\item@color!60, draw=black, line width=0.3pt]
+        ($(\item@xorigin, \item@yorigin) + (\i*\step - \halfWoodenBoardWidth, 0)$) rectangle ($(\item@xorigin, \item@yend) + (\i*\step + \halfWoodenBoardWidth, 0)$);%
+    }
+      
+  \end{scope}%
+}
+
+\makeatother

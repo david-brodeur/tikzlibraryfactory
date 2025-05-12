@@ -1,0 +1,74 @@
+% tikzlibraryfactory.pallet.code.tex
+\makeatletter
+% If \ProvidesTikzLibrary isn't defined yet, define it as an alias for \ProvidesPackage
+\@ifundefined{ProvidesTikzLibrary}{%
+  \def\ProvidesTikzLibrary#1[#2]{%
+    \ProvidesFile{tikzlibrary#1}[#2]%
+  }%
+}{}
+\makeatother
+
+\ProvidesTikzLibrary{factory.pallet}[2025/05/05 v1.0 Factory agv robot library]
+
+\RequirePackage{tikz}
+\usetikzlibrary{calc}
+\usetikzlibrary{factory.robot}
+
+\makeatletter
+
+% \brief Add a new agv robot definition
+% \param #1 : robot ID
+% \param #2 : robot length
+% \param #3 : robot width
+% \param #4 : robot color
+% \param #5 : robot front wheels orientation
+\newcommand{\addAGV}[5]{%
+  \addRobot{agv@#1}{#2}{#3}{#4}
+  \expandafter\gdef\csname robot@agv@#1@wheelsOrientation\endcsname{#5}%
+}%
+
+% \brief Draw a robot given a specific ID definition
+% \param #1 : robot ID
+% \param #2 : robot x-axis position
+% \param #3 : robot y-axis position
+% \param #4 : robot orientation [in degrees]
+\newcommand{\drawAGV}[4]{%
+
+  \drawRobot{agv@#1}{#2}{#3}{#4}
+  \edef\robot@wheelsOrientation{\csname robot@agv@#1@wheelsOrientation\endcsname}%
+
+  % Draw robot
+  \begin{scope}[shift={(\item@x,\item@y)}, rotate=\item@orientation]
+
+    \pgfmathsetmacro{\cornerRadius}{10}%
+    \pgfmathsetmacro{\wheelOffset}{0.3}%
+    \pgfmathsetmacro{\wheelRadius}{0.3}%
+    \pgfmathsetmacro{\wheelThickness}{0.4}%
+
+    \pgfmathsetmacro{\wheel@front@x}{\item@xend - \wheelOffset - \wheelRadius}%
+    \pgfmathsetmacro{\wheel@front@y}{\item@yend}%
+
+    \pgfmathsetmacro{\wheel@rear@x}{\item@xorigin + \wheelOffset + \wheelRadius}%
+    \pgfmathsetmacro{\wheel@rear@y}{\item@yend}%
+
+    %Draw wheels
+    \foreach \i in {-1,1} {
+
+      % Draw front wheels
+      \begin{scope}[shift={(\wheel@front@x, \i*\wheel@front@y)}, rotate=\robot@wheelsOrientation]
+        \draw[fill=black!60, draw=black] (-\wheelRadius, -\wheelThickness/2) rectangle (\wheelRadius,\wheelThickness/2);
+      \end{scope}
+
+      % Draw rear wheels
+      \begin{scope}[shift={(\wheel@rear@x, \i*\wheel@rear@y)}, rotate=0]
+        \draw[fill=black!60, draw=black] (-\wheelRadius, -\wheelThickness/2) rectangle (\wheelRadius,\wheelThickness/2);
+      \end{scope}
+    }
+
+    % Draw robot base
+    \draw[rounded corners=\cornerRadius, fill=\item@color!60, draw=black, line width=0.3pt] (\item@xorigin, \item@yorigin) rectangle (\item@xend, (\item@yend);%
+      
+  \end{scope}%
+}
+
+\makeatother

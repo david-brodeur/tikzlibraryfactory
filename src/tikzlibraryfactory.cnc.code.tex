@@ -1,0 +1,57 @@
+% tikzlibraryfactory.cnc.code.tex
+\makeatletter
+% If \ProvidesTikzLibrary isn't defined yet, define it as an alias for \ProvidesPackage
+\@ifundefined{ProvidesTikzLibrary}{%
+  \def\ProvidesTikzLibrary#1[#2]{%
+    \ProvidesFile{tikzlibrary#1}[#2]%
+  }%
+}{}
+\makeatother
+
+\ProvidesTikzLibrary{factory.cnc}[2025/05/05 v1.0 Factory cnc machines library]
+
+\RequirePackage{tikz}
+\usetikzlibrary{factory.item}
+\usetikzlibrary{calc}
+
+\makeatletter
+
+% \brief Add a new cnc machine definition
+% \param #1 : cnc ID
+% \param #2 : cnc length
+% \param #3 : cnc width
+% \param #4 : cnc color
+\newcommand{\addCNC}[4]{%
+    \addItem{cnc@#1}{#2}{#3}{#4}
+}%
+
+% \brief Draw a cnc given a specific ID definition
+% \param #1 : cnc ID
+% \param #2 : cnc x-axis position
+% \param #3 : cnc y-axis position
+% \param #4 : cnc orientation [in degrees]
+\newcommand{\drawCNC}[4]{%
+
+  % Get all parameters
+  \drawItem{cnc@#1}{#2}{#3}{#4}
+
+  % Compute door coordinates
+  \pgfmathsetmacro{\doorOffset}{(0.05}%
+  \pgfmathsetmacro{\door@xorigin}{(0.05*\item@length) - \item@xoffset}%
+  \pgfmathsetmacro{\door@yorigin}{0 - \item@yoffset - \doorOffset}%
+  \pgfmathsetmacro{\door@xend}{(0.55*\item@length) - \item@xoffset}%
+  \pgfmathsetmacro{\door@yend}{0.1*\item@width -\item@yoffset}%
+
+  % Draw cnc
+  \begin{scope}[shift={(\item@x,\item@y)}, rotate=\item@orientation]
+
+    % Draw frame
+    \draw[fill=\item@color!60, draw=black, line width=1pt] (\item@xorigin, \item@yorigin) rectangle (\item@xend, (\item@yend);%
+
+    % Draw cnc's door
+    \draw[fill=white, opacity=0.9, draw=black, line width=0.3pt] (\door@xorigin, \door@yorigin) rectangle (\door@xend, (\door@yend);%
+    
+  \end{scope}%
+}
+
+\makeatother

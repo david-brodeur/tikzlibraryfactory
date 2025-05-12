@@ -1,0 +1,53 @@
+% tikzlibraryfactory.safety.lidar.code.tex
+\makeatletter
+% If \ProvidesTikzLibrary isn't defined yet, define it as an alias for \ProvidesPackage
+\@ifundefined{ProvidesTikzLibrary}{%
+  \def\ProvidesTikzLibrary#1[#2]{%
+    \ProvidesFile{tikzlibrary#1}[#2]%
+  }%
+}{}
+\makeatother
+
+\ProvidesTikzLibrary{factory.safety.lidar}[2025/05/05 v1.0 Factory safety estlidarop device library]
+
+\RequirePackage{tikz}
+\usetikzlibrary{factory.safety}
+
+\makeatletter
+
+% \brief Add a new safety lidar device definition
+% \param #1 : safety device ID
+% \param #2 : safety device color
+% \param #3 : safety device range
+\newcommand{\addLidar}[3]{%
+  \addSafety{lidar@#1}{0.5}{0.5}{#2}{#3}
+}%
+
+% \brief Draw a safety lidar device given a specific ID definition
+% \param #1 : safety device ID
+% \param #2 : safety device x-axis position
+% \param #3 : safety device y-axis position
+% \param #4 : safety device orientation [in degrees]
+\newcommand{\drawLidar}[4]{%
+
+  \drawSafety{lidar@#1}{#2}{#3}{#4}
+
+  % Draw safety estop
+  \begin{scope}[shift={(\item@x,\item@y)}, rotate=\item@orientation]
+
+    \pgfmathsetmacro{\radius}{1*\item@length/3}%
+
+    % Draw safety device
+    \draw[fill=\item@color, draw=black] (\item@xorigin, \item@yorigin) rectangle (\item@xend, \item@yend);
+    \draw[fill=black!60, draw=black] (0,0) circle (\radius);
+
+    % Draw signal
+    \draw[draw=red, ultra thick] (0,-1) arc (-90:90:1);
+    \draw[draw=red, ultra thick] (0,-2) arc (-90:90:2);
+    \draw[draw=red, ultra thick] (0,1) -- (0,2);
+    \draw[draw=red, ultra thick] (0,-1) -- (0,-2);
+    
+  \end{scope}%
+}
+
+\makeatother

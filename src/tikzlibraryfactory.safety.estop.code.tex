@@ -1,0 +1,49 @@
+% tikzlibraryfactory.safety.estop.code.tex
+\makeatletter
+% If \ProvidesTikzLibrary isn't defined yet, define it as an alias for \ProvidesPackage
+\@ifundefined{ProvidesTikzLibrary}{%
+  \def\ProvidesTikzLibrary#1[#2]{%
+    \ProvidesFile{tikzlibrary#1}[#2]%
+  }%
+}{}
+\makeatother
+
+\ProvidesTikzLibrary{factory.safety.estop}[2025/05/05 v1.0 Factory safety estop device library]
+
+\RequirePackage{tikz}
+\usetikzlibrary{factory.safety}
+
+\makeatletter
+
+% \brief Add a new safety estop device definition
+% \param #1 : safety device ID
+% \param #2 : safety device color
+% \param #3 : safety device range
+\newcommand{\addEStop}[3]{%
+  \addSafety{estop@#1}{0.3}{0.3}{#2}{#3}
+}%
+
+% \brief Draw a safety estop device given a specific ID definition
+% \param #1 : safety device ID
+% \param #2 : safety device x-axis position
+% \param #3 : safety device y-axis position
+% \param #4 : safety device orientation [in degrees]
+\newcommand{\drawEStop}[4]{%
+
+  \drawSafety{estop@#1}{#2}{#3}{#4}
+
+  % Draw safety estop
+  \begin{scope}[shift={(\item@x,\item@y)}, rotate=\item@orientation]
+
+    \pgfmathsetmacro{\radius}{1*\item@length/3}%
+    \pgfmathsetmacro{\lightRadius}{2*\radius/3}%
+
+    % Draw safety device
+    \draw[fill=\item@color, draw=black] (\item@xorigin, \item@yorigin) rectangle (\item@xend, \item@yend);
+    \draw[fill=red!60, draw=black] (0,0) circle (\radius);
+    \draw[fill=red, draw=black] (0,0) circle (\lightRadius);
+    
+  \end{scope}%
+}
+
+\makeatother

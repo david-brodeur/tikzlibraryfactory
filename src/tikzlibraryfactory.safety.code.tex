@@ -1,0 +1,48 @@
+% tikzlibraryfactory.safety.code.tex
+\makeatletter
+% If \ProvidesTikzLibrary isn't defined yet, define it as an alias for \ProvidesPackage
+\@ifundefined{ProvidesTikzLibrary}{%
+  \def\ProvidesTikzLibrary#1[#2]{%
+    \ProvidesFile{tikzlibrary#1}[#2]%
+  }%
+}{}
+\makeatother
+
+\ProvidesTikzLibrary{factory.sensor}[2025/05/05 v1.0 Factory safety devices library]
+
+\RequirePackage{tikz}
+\usetikzlibrary{factory.item}
+\usetikzlibrary{calc}
+
+\makeatletter
+
+% \brief Add a new safety device definition
+% \param #1 : safety device ID
+% \param #2 : safety device length
+% \param #3 : safety device width
+% \param #4 : safety device color
+% \param #5 : safety device range
+\newcommand{\addSafety}[5]{%
+  \addItem{safety@#1}{#2}{#3}{#4}
+  \expandafter\gdef\csname safety@#1@range\endcsname{#5}%
+}%
+
+% \brief Draw a safety device given a specific ID definition
+% \param #1 : safety device ID
+% \param #2 : safety device x-axis position
+% \param #3 : safety device y-axis position
+% \param #4 : safety device orientation [in degrees]
+\newcommand{\drawSafety}[4]{%
+
+  % Get all parameters
+  \drawItem{safety@#1}{#2}{#3}{#4}
+  \edef\safety@range{\csname safety@#1@range\endcsname}%
+
+  % Compute signal coordinates
+  \pgfmathsetmacro{\signal@xorigin}{(\item@length/2)}%
+  \pgfmathsetmacro{\signal@yorigin}{0}%
+  \pgfmathsetmacro{\signal@xend}{(\item@length/2) + \sensor@range}%
+  \pgfmathsetmacro{\signal@yend}{0}%
+}
+
+\makeatother

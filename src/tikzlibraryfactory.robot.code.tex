@@ -1,0 +1,39 @@
+% tikzlibraryfactory.robot.code.tex
+\makeatletter
+% If \ProvidesTikzLibrary isn't defined yet, define it as an alias for \ProvidesPackage
+\@ifundefined{ProvidesTikzLibrary}{%
+  \def\ProvidesTikzLibrary#1[#2]{%
+    \ProvidesFile{tikzlibrary#1}[#2]%
+  }%
+}{}
+\makeatother
+
+\ProvidesTikzLibrary{factory.robot}[2025/05/05 v1.0 Factory robots library]
+
+\RequirePackage{tikz}
+\usetikzlibrary{factory.item}
+\usetikzlibrary{calc}
+
+\makeatletter
+
+% \brief Add a new robot definition
+% \param #1 : robot ID
+% \param #4 : robot length
+% \param #5 : robot width
+% \param #3 : robot color
+\newcommand{\addRobot}[4]{%
+  \addItem{robot@#1}{#2}{#3}{#4}
+}%
+
+% \brief Draw a robot given a specific ID definition
+% \param #1 : robot ID
+% \param #2 : robot x-axis position
+% \param #3 : robot y-axis position
+% \param #4 : robot orientation [in degrees]
+\newcommand{\drawRobot}[4]{%
+
+  % Get all parameters
+  \drawItem{robot@#1}{#2}{#3}{#4}
+}
+
+\makeatother

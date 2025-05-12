@@ -1,0 +1,67 @@
+% tikzlibraryfactory.conveyor.code.tex
+\makeatletter
+% If \ProvidesTikzLibrary isn't defined yet, define it as an alias for \ProvidesPackage
+\@ifundefined{ProvidesTikzLibrary}{%
+  \def\ProvidesTikzLibrary#1[#2]{%
+    \ProvidesFile{tikzlibrary#1}[#2]%
+  }%
+}{}
+\makeatother
+
+\ProvidesTikzLibrary{factory.conveyor}[2025/05/05 v1.0 Factory conveyor library]
+
+\RequirePackage{tikz}
+\usetikzlibrary{factory.item}
+\usetikzlibrary{calc}
+
+\makeatletter
+
+% \brief Add a new conveyor definition
+% \param #1 : conveyor ID
+% \param #2 : conveyor length
+% \param #3 : conveyor width
+% \param #4 : conveyor color
+\newcommand{\addConveyor}[4]{%
+  \addItem{conveyor@#1}{#2}{#3}{#4}
+}%
+
+% \brief Draw a conveyor given a specific ID definition
+% \param #1 : conveyor ID
+% \param #2 : conveyor x-axis position
+% \param #3 : conveyor y-axis position
+% \param #4 : conveyor orientation [in degrees]
+\newcommand{\drawConveyor}[4]{%
+
+  % Get all parameters
+  \drawItem{conveyor@#1}{#2}{#3}{#4}
+  
+  % Compute conveyor frame coordinates
+  \pgfmathsetmacro{\item@xorigin}{0}%
+  \pgfmathsetmacro{\item@yorigin}{0 - (\item@width/2)}%
+  \pgfmathsetmacro{\item@xend}{\item@length}%
+  \pgfmathsetmacro{\item@yend}{(\item@width/2)}%
+
+  % Compute conveyor rollers dimensions
+  \pgfmathsetmacro{\cornerRadius}{1.5}%
+  \pgfmathsetmacro{\step}{0.25}%
+  \pgfmathsetmacro{\N}{\item@length / \step - 1}%
+  \pgfmathsetmacro{\rollerDiameter}{3 * \step / 5}%
+  \pgfmathsetmacro{\rollerRadius}{\rollerDiameter / 2}%
+
+  % Draw conveyor
+  \begin{scope}[shift={(\item@x,\item@y)}, rotate=\item@orientation]
+
+    % Draw frame
+    \draw[fill=white, draw=black, line width=0.3pt] 
+      (\item@xorigin, \item@yorigin) rectangle (\item@xend, (\item@yend);%
+
+    % Draw rollers
+    \foreach \i in {1,...,\N} {
+      \draw[rounded corners=\cornerRadius, fill=\item@color!60, draw=black!70, line width=0.3pt]
+        ($(\item@xorigin, \item@yorigin) + (\i*\step - \rollerRadius, 0)$) rectangle ($(\item@xorigin, \item@yend) + (\i*\step + \rollerRadius, 0)$);%
+    }
+    
+  \end{scope}%
+}
+
+\makeatother

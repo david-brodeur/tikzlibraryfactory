@@ -1,0 +1,53 @@
+% tikzlibraryfactory.item.code.tex
+\makeatletter
+% If \ProvidesTikzLibrary isn't defined yet, define it as an alias for \ProvidesPackage
+\@ifundefined{ProvidesTikzLibrary}{%
+  \def\ProvidesTikzLibrary#1[#2]{%
+    \ProvidesFile{tikzlibrary#1}[#2]%
+  }%
+}{}
+\makeatother
+
+\ProvidesTikzLibrary{factory.item}[2025/05/05 v1.0 Factory item template library]
+
+\RequirePackage{tikz}
+\usetikzlibrary{calc}
+
+\makeatletter
+
+% \brief Add a new item definition
+% \param #1 : item ID
+% \param #2 : item length
+% \param #3 : item width
+% \param #4 : item color
+\newcommand{\addItem}[4]{%
+  \expandafter\gdef\csname #1@length\endcsname{#2}%
+  \expandafter\gdef\csname #1@width\endcsname{#3}%
+  \expandafter\gdef\csname #1@color\endcsname{#4}%
+}%
+
+% \brief Draw an item given a specific ID definition
+% \param #1 : item ID
+% \param #2 : item x-axis position
+% \param #3 : item y-axis position
+% \param #4 : item orientation [in degrees]
+\newcommand{\drawItem}[4]{%
+
+  % Get all parameters
+  \edef\item@x{#2}%
+  \edef\item@y{#3}%
+  \edef\item@orientation{#4}%
+  \edef\item@length{\csname #1@length\endcsname}%
+  \edef\item@width{\csname #1@width\endcsname}%
+  \edef\item@color{\csname #1@color\endcsname}%
+  
+  % Compute item coordinates
+  \pgfmathsetmacro{\item@xoffset}{(\item@length/2)}%
+  \pgfmathsetmacro{\item@yoffset}{(\item@width/2)}%  
+  \pgfmathsetmacro{\item@xorigin}{0 - \item@xoffset}%
+  \pgfmathsetmacro{\item@yorigin}{0 - \item@yoffset}%
+  \pgfmathsetmacro{\item@xend}{\item@xoffset}%
+  \pgfmathsetmacro{\item@yend}{\item@yoffset}%
+}
+
+\makeatother

@@ -1,0 +1,48 @@
+% tikzlibraryfactory.sensor.code.tex
+\makeatletter
+% If \ProvidesTikzLibrary isn't defined yet, define it as an alias for \ProvidesPackage
+\@ifundefined{ProvidesTikzLibrary}{%
+  \def\ProvidesTikzLibrary#1[#2]{%
+    \ProvidesFile{tikzlibrary#1}[#2]%
+  }%
+}{}
+\makeatother
+
+\ProvidesTikzLibrary{factory.sensor}[2025/05/05 v1.0 Factory sensors library]
+
+\RequirePackage{tikz}
+\usetikzlibrary{factory.item}
+\usetikzlibrary{calc}
+
+\makeatletter
+
+% \brief Add a new sensor definition
+% \param #1 : sensor ID
+% \param #2 : sensor length
+% \param #3 : sensor width
+% \param #4 : sensor color
+% \param #5 : sensor range
+\newcommand{\addSensor}[5]{%
+  \addItem{sensor@#1}{#2}{#3}{#4}
+  \expandafter\gdef\csname sensor@#1@range\endcsname{#5}%
+}%
+
+% \brief Draw a sensor given a specific ID definition
+% \param #1 : sensor ID
+% \param #2 : sensor x-axis position
+% \param #3 : sensor y-axis position
+% \param #4 : sensor orientation [in degrees]
+\newcommand{\drawSensor}[4]{%
+
+  % Get all parameters
+  \drawItem{sensor@#1}{#2}{#3}{#4}
+  \edef\sensor@range{\csname sensor@#1@range\endcsname}%
+
+  % Compute signal coordinates
+  \pgfmathsetmacro{\signal@xorigin}{(\item@length/2)}%
+  \pgfmathsetmacro{\signal@yorigin}{0}%
+  \pgfmathsetmacro{\signal@xend}{(\item@length/2) + \sensor@range}%
+  \pgfmathsetmacro{\signal@yend}{0}%
+}
+
+\makeatother

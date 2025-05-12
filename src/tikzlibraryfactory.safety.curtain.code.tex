@@ -1,0 +1,54 @@
+% tikzlibraryfactory.safety.curtain.code.tex
+\makeatletter
+% If \ProvidesTikzLibrary isn't defined yet, define it as an alias for \ProvidesPackage
+\@ifundefined{ProvidesTikzLibrary}{%
+  \def\ProvidesTikzLibrary#1[#2]{%
+    \ProvidesFile{tikzlibrary#1}[#2]%
+  }%
+}{}
+\makeatother
+
+\ProvidesTikzLibrary{factory.safety.curtain}[2025/05/05 v1.0 Factory safety curtain device library]
+
+\RequirePackage{tikz}
+\usetikzlibrary{factory.safety}
+
+\makeatletter
+
+% \brief Add a new safety curtain device definition
+% \param #1 : safety device ID
+% \param #2 : safety device color
+% \param #3 : safety device range
+\newcommand{\addCurtain}[3]{%
+  \addSafety{curtain@#1}{0.3}{0.3}{#2}{#3}
+}%
+
+% \brief Draw a safety curtain device given a specific ID definition
+% \param #1 : safety device ID
+% \param #2 : safety device x-axis position
+% \param #3 : safety device y-axis position
+% \param #4 : safety device orientation [in degrees]
+\newcommand{\drawCurtain}[4]{%
+
+  \drawSafety{curtain@#1}{#2}{#3}{#4}
+
+  % Draw safety curtain
+  \begin{scope}[shift={(\item@x,\item@y)}, rotate=\item@orientation]
+
+    \pgfmathsetmacro{\baseRadius}{\item@length/2}%
+    \pgfmathsetmacro{\curtainRadius}{2*\baseRadius/3}%
+
+    % Draw safety device
+    \draw[fill=black] (0,0) circle (\baseRadius);
+    \draw[fill=\item@color, draw=black] (0,0) circle (\curtainRadius);
+
+    \draw[fill=black] (\safety@range,0) circle (\baseRadius);
+    \draw[fill=\item@color, draw=black] (\safety@range,0) circle (\curtainRadius);
+
+    % Draw signal
+    \draw[draw=red, dashed, ultra thick] (\curtainRadius, 0) -- (\safety@range - \curtainRadius, 0);
+    
+  \end{scope}%
+}
+
+\makeatother

@@ -1,0 +1,38 @@
+% tikzlibraryshapes.code.tex
+\makeatletter
+% If \ProvidesTikzLibrary isn't defined yet, define it as an alias for \ProvidesPackage
+\@ifundefined{ProvidesTikzLibrary}{%
+  \def\ProvidesTikzLibrary#1[#2]{%
+    \ProvidesFile{tikzlibrary#1}[#2]%
+  }%
+}{}
+\makeatother
+
+\ProvidesTikzLibrary{factory.shapes}[2025/05/05 v1.0 Basic shapes library]
+
+\RequirePackage{tikz}
+\usetikzlibrary{calc}
+
+\makeatletter
+
+% \brief Draw a triangle
+% \param #1 : base
+% \param #2 : height
+% \param #3 : orientation
+% \param #4 : color
+\newcommand{\drawTriangle}[4]{%
+
+  \edef\base{#1}%
+  \edef\height{#2}%
+  \edef\orientation{#3}%
+  \edef\color{#4}%
+
+  \begin{scope}[shift={(0,0)}, rotate=\orientation]
+    \pgfmathsetmacro{\halfbase}{\base/2}
+    \draw[fill=\color] (0,0) -- (-\halfbase, -\height) -- (\halfbase, -\height) -- cycle;
+  \end{scope}%
+}%
+
+
+
+\makeatother
