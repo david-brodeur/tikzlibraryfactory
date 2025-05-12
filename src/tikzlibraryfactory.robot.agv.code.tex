@@ -8,7 +8,7 @@
 }{}
 \makeatother
 
-\ProvidesTikzLibrary{factory.pallet}[2025/05/05 v1.0 Factory agv robot library]
+\ProvidesTikzLibrary{factory.robot.agv}[2025/05/05 v1.0 Factory agv robot library]
 
 \RequirePackage{tikz}
 \usetikzlibrary{calc}
@@ -40,15 +40,15 @@
   % Draw robot
   \begin{scope}[shift={(\item@x,\item@y)}, rotate=\item@orientation]
 
-    \pgfmathsetmacro{\cornerRadius}{10}%
-    \pgfmathsetmacro{\wheelOffset}{0.3}%
-    \pgfmathsetmacro{\wheelRadius}{0.3}%
-    \pgfmathsetmacro{\wheelThickness}{0.4}%
+    \edef\camera@cornerRadius{10}%
+    \edef\camera@wheelOffset{0.3}%
+    \edef\camera@wheelRadius{0.3}%
+    \edef\camera@wheelThickness{0.4}%
 
-    \pgfmathsetmacro{\wheel@front@x}{\item@xend - \wheelOffset - \wheelRadius}%
+    \pgfmathsetmacro{\wheel@front@x}{\item@xend - \camera@wheelOffset - \camera@wheelRadius}%
     \pgfmathsetmacro{\wheel@front@y}{\item@yend}%
 
-    \pgfmathsetmacro{\wheel@rear@x}{\item@xorigin + \wheelOffset + \wheelRadius}%
+    \pgfmathsetmacro{\wheel@rear@x}{\item@xorigin + \camera@wheelOffset + \camera@wheelRadius}%
     \pgfmathsetmacro{\wheel@rear@y}{\item@yend}%
 
     %Draw wheels
@@ -56,17 +56,17 @@
 
       % Draw front wheels
       \begin{scope}[shift={(\wheel@front@x, \i*\wheel@front@y)}, rotate=\robot@wheelsOrientation]
-        \draw[fill=black!60, draw=black] (-\wheelRadius, -\wheelThickness/2) rectangle (\wheelRadius,\wheelThickness/2);
+        \draw[fill=black!60, draw=black] (-\camera@wheelRadius, -\camera@wheelThickness/2) rectangle (\camera@wheelRadius,\camera@wheelThickness/2);
       \end{scope}
 
       % Draw rear wheels
       \begin{scope}[shift={(\wheel@rear@x, \i*\wheel@rear@y)}, rotate=0]
-        \draw[fill=black!60, draw=black] (-\wheelRadius, -\wheelThickness/2) rectangle (\wheelRadius,\wheelThickness/2);
+        \draw[fill=black!60, draw=black] (-\camera@wheelRadius, -\camera@wheelThickness/2) rectangle (\camera@wheelRadius,\camera@wheelThickness/2);
       \end{scope}
     }
 
     % Draw robot base
-    \draw[rounded corners=\cornerRadius, fill=\item@color!60, draw=black, line width=0.3pt] (\item@xorigin, \item@yorigin) rectangle (\item@xend, (\item@yend);%
+    \draw[rounded corners=\camera@cornerRadius, fill=\item@color!60, draw=black, line width=0.3pt] (\item@xorigin, \item@yorigin) rectangle (\item@xend, (\item@yend);%
       
   \end{scope}%
 }
