@@ -11,8 +11,9 @@
 \ProvidesTikzLibrary{factory.robot.agv}[2025/05/05 v1.0 Factory agv robot library]
 
 \RequirePackage{tikz}
-\usetikzlibrary{calc}
 \usetikzlibrary{factory.robot}
+\usetikzlibrary{calc}
+
 
 \makeatletter
 
@@ -27,7 +28,7 @@
   \expandafter\gdef\csname robot@agv@#1@wheelsOrientation\endcsname{#5}%
 }%
 
-% \brief Draw a robot given a specific ID definition
+% \brief Draw an agv given a specific ID definition
 % \param #1 : robot ID
 % \param #2 : robot x-axis position
 % \param #3 : robot y-axis position
@@ -40,15 +41,15 @@
   % Draw robot
   \begin{scope}[shift={(\item@x,\item@y)}, rotate=\item@orientation]
 
-    \edef\camera@cornerRadius{10}%
-    \edef\camera@wheelOffset{0.3}%
-    \edef\camera@wheelRadius{0.3}%
-    \edef\camera@wheelThickness{0.4}%
+    \edef\agv@cornerRadius{10}%
+    \edef\agv@wheelOffset{0.3}%
+    \edef\agv@wheelRadius{0.3}%
+    \edef\agv@wheelThickness{0.4}%
 
-    \pgfmathsetmacro{\wheel@front@x}{\item@xend - \camera@wheelOffset - \camera@wheelRadius}%
+    \pgfmathsetmacro{\wheel@front@x}{\item@xend - \agv@wheelOffset - \agv@wheelRadius}%
     \pgfmathsetmacro{\wheel@front@y}{\item@yend}%
 
-    \pgfmathsetmacro{\wheel@rear@x}{\item@xorigin + \camera@wheelOffset + \camera@wheelRadius}%
+    \pgfmathsetmacro{\wheel@rear@x}{\item@xorigin + \agv@wheelOffset + \agv@wheelRadius}%
     \pgfmathsetmacro{\wheel@rear@y}{\item@yend}%
 
     %Draw wheels
@@ -56,17 +57,17 @@
 
       % Draw front wheels
       \begin{scope}[shift={(\wheel@front@x, \i*\wheel@front@y)}, rotate=\robot@wheelsOrientation]
-        \draw[fill=black!60, draw=black] (-\camera@wheelRadius, -\camera@wheelThickness/2) rectangle (\camera@wheelRadius,\camera@wheelThickness/2);
+        \draw[fill=black!60, draw=black] (-\agv@wheelRadius, -\agv@wheelThickness/2) rectangle (\agv@wheelRadius,\agv@wheelThickness/2);
       \end{scope}
 
       % Draw rear wheels
       \begin{scope}[shift={(\wheel@rear@x, \i*\wheel@rear@y)}, rotate=0]
-        \draw[fill=black!60, draw=black] (-\camera@wheelRadius, -\camera@wheelThickness/2) rectangle (\camera@wheelRadius,\camera@wheelThickness/2);
+        \draw[fill=black!60, draw=black] (-\agv@wheelRadius, -\agv@wheelThickness/2) rectangle (\agv@wheelRadius,\agv@wheelThickness/2);
       \end{scope}
     }
 
     % Draw robot base
-    \draw[rounded corners=\camera@cornerRadius, fill=\item@color!60, draw=black, line width=0.3pt] (\item@xorigin, \item@yorigin) rectangle (\item@xend, (\item@yend);%
+    \draw[rounded corners=\agv@cornerRadius, fill=\item@color!60, draw=black, line width=0.3pt] (\item@xorigin, \item@yorigin) rectangle (\item@xend, (\item@yend);%
       
   \end{scope}%
 }

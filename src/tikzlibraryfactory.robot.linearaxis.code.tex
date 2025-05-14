@@ -1,0 +1,49 @@
+% tikzlibraryfactory.robot.linearaxis.code.tex
+\makeatletter
+% If \ProvidesTikzLibrary isn't defined yet, define it as an alias for \ProvidesPackage
+\@ifundefined{ProvidesTikzLibrary}{%
+  \def\ProvidesTikzLibrary#1[#2]{%
+    \ProvidesFile{tikzlibrary#1}[#2]%
+  }%
+}{}
+\makeatother
+
+\ProvidesTikzLibrary{factory.box}[2025/05/05 v1.0 Factory linearaxis library]
+
+\RequirePackage{tikz}
+\RequirePackage{ifthen}
+\usetikzlibrary{factory.robot}
+\usetikzlibrary{calc}
+
+\makeatletter
+
+% \brief Add a new linear axis definition
+% \param #1 : robot ID
+% \param #2 : robot length
+% \param #3 : robot width
+% \param #4 : robot color
+\newcommand{\addLinearAxis}[4]{%
+  \addRobot{box@#1}{#2}{#3}{#4}
+}%
+
+% \brief Draw a linear axis given a specific ID definition
+% \param #1 : robot ID
+% \param #2 : robot x-axis position
+% \param #3 : robot y-axis position
+% \param #4 : robot orientation [in degrees]
+\newcommand{\drawLinearAxis}[4]{%
+
+  % Get all parameters
+  \drawRobot{box@#1}{#2}{#3}{#4}
+
+  % Draw item
+  \begin{scope}[shift={(\item@x,\item@y)}, rotate=\item@orientation]
+
+    % Draw linear axis
+    \draw[fill=\item@color, draw=black, line width=0.3pt] (\item@xorigin, \item@yorigin) rectangle (\item@xend, (\item@yend);%
+    \draw[black, dashed, thick] (\item@xorigin, 0) -- (\item@xend, 0);
+
+  \end{scope}%
+}
+
+\makeatother

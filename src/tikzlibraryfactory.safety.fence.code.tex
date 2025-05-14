@@ -16,20 +16,20 @@
 
 \makeatletter
 
-% \brief Add a new fence definition
-% \param #1 : fence ID
-% \param #2 : fence length
-% \param #3 : fence width
-% \param #4 : fence color
+% \brief Add a new safety fence definition
+% \param #1 : safety device ID
+% \param #2 : safety device length
+% \param #3 : safety device width
+% \param #4 : safety device color
 \newcommand{\addFence}[4]{%
   \addItem{fence@#1}{#2}{#3}{#4}
 }%
 
-% \brief Draw a fence given a specific ID definition
-% \param #1 : fence ID
-% \param #2 : fence x-axis position
-% \param #3 : fence y-axis position
-% \param #4 : fence orientation [in degrees]
+% \brief Draw a safety fence given a specific ID definition
+% \param #1 : safety device ID
+% \param #2 : safety device x-axis position
+% \param #3 : safety device y-axis position
+% \param #4 : safety device orientation [in degrees]
 \newcommand{\drawFence}[4]{%
 
   % Get all parameters
@@ -41,8 +41,8 @@
     \edef\fence@thickness{0.2}%
 
     % Draw fence
-    \draw[fill=\item@color, draw=black, line width=0.3pt] (\item@xorigin, \item@yorigin) rectangle (\item@xend, \item@yend);%
-    \draw[fill=white, draw=black, line width=0.3pt] (\item@xorigin+\fence@thickness, \item@yorigin + \fence@thickness) rectangle (\item@xend - \fence@thickness, (\item@yend - \fence@thickness);%
+    \draw[fill=\item@color, draw=black, line width=1pt] (\item@xorigin, \item@yorigin) rectangle (\item@xend, \item@yend);%
+    \draw[fill=white, draw=black, line width=1pt] (\item@xorigin+\fence@thickness, \item@yorigin + \fence@thickness) rectangle (\item@xend - \fence@thickness, (\item@yend - \fence@thickness);%
   \end{scope}%
 }
 

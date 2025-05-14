@@ -1,4 +1,4 @@
-% tikzlibraryfactory.pallet.code.tex
+% tikzlibraryfactory.robot.arm.code.tex
 \makeatletter
 % If \ProvidesTikzLibrary isn't defined yet, define it as an alias for \ProvidesPackage
 \@ifundefined{ProvidesTikzLibrary}{%
@@ -14,156 +14,193 @@
 \RequirePackage{xfp}
 \RequirePackage{ifthen}
 \RequirePackage{pgf}
+\usetikzlibrary{factory.robot}
 \usetikzlibrary{calc}
 \usetikzlibrary{shadings}
 
 \makeatletter
 
-% ==========
-% PARAMÈTRES GLOBAUX
-% ==========
-
-\pgfkeys{
-  /robot/.is family,
-  /robot,
-  id/.store in=\id, id/.initial=robot,
-  x/.store in=\x, x/.initial=0.0,
-  y/.store in=\y, y/.initial=0.0,
-  nJoints/.store in=\nJoints, nJoints/.initial=2,
-  linkColor/.store in=\linkColor, linkColor/.initial=white,
-  isShading/.store in=\isShading, isShading/.initial=0,
-  isTool/.store in=\isTool, isTool/.initial=1,
-  isWorkspace/.store in=\isWorkspace, isWorkspace/.initial=0,
-  workspaceRadius/.store in=\workspaceRadius, workspaceRadius/.initial=0
+% \brief Set Denavit Hartenberg parameters for a specified link
+% \param #1 : robot ID
+% \param #2 : link ID
+% \param #3 : Denavit Hartenberg a parameter
+% \param #4 : Denavit Hartenberg d parameter
+% \param #5 : Denavit Hartenberg theta parameter
+\newcommand{\setDHParameters}[5]{%
+  \expandafter\gdef\csname robot@arm@#1@#2@a\endcsname{#3}%
+  \expandafter\gdef\csname robot@arm@#1@#2@d\endcsname{#4}%
+  \expandafter\gdef\csname robot@arm@#1@#2@theta\endcsname{#5}%
 }
 
-\newcommand{\linkThickness}{0.4}       % Épaisseur des bras
-\newcommand{\linkCornerRadius}{3.5pt}  % Rayon des coins arrondis
-\newcommand{\robotBaseRadius}{0.35}    % Rayon de la base
-
-% ==========
-% CONFIGURATION ROBOT
-% ==========
-
-% Enregistrer les paramètres DH : theta et a
-\newcommand{\setArmDHParameters}[5]{%
-  \expandafter\def\csname theta@#1@#2\endcsname{#3}%
-  \expandafter\def\csname a@#1@#2\endcsname{#4}%
+% \brief Add a new robot link definition
+% \param #1 : robot ID
+% \param #2 : link ID
+% \param #3 : Denavit Hartenberg a parameter
+% \param #4 : Denavit Hartenberg d parameter
+% \param #5 : Denavit Hartenberg theta parameter
+\newcommand{\addLink}[5]{%
+  \setDHParameters{#1}{#2}{#3}{#4}{#5}
 }
 
-% Initialiser un robot à une position donnée
-\newcommand{\initRobotArm}[3]{%
-  \expandafter\def\csname xbase@#1\endcsname{#2}%
-  \expandafter\def\csname ybase@#1\endcsname{#3}%
-  \expandafter\def\csname xprev@#1\endcsname{#2}%
-  \expandafter\def\csname yprev@#1\endcsname{#3}%
-  \expandafter\def\csname angleprev@#1\endcsname{0}%
+% \brief Add a new robotic arm definition
+% \param #1 : robot ID
+% \param #2 : number of links
+% \param #3 : color
+% \param #4 : is color shading enabled
+% \param #5 : is tool visible
+% \param #6 : is workspace visible
+
+\newcommand{\addArm}[6]{%
+  \addRobot{arm@#1}{0}{0}{#3}
+  \expandafter\gdef\csname robot@arm@#1@nLinks\endcsname{#2}%
+  \expandafter\gdef\csname robot@arm@#1@isShading\endcsname{#4}%
+  \expandafter\gdef\csname robot@arm@#1@isTool\endcsname{#5}%
+  \expandafter\gdef\csname robot@arm@#1@isWorkspace\endcsname{#6}%
 }
 
-% Calculer la position du lien courant
-\newcommand{\computeArmLinkPosition}[3]{%
-  \pgfmathsetmacro{\theta}{\csname theta@#1@#2\endcsname}%
-  \pgfmathsetmacro{\a}{\csname a@#1@#2\endcsname}%
-  \pgfmathsetmacro{\angleprev}{\csname angleprev@#1\endcsname}%
-  \pgfmathsetmacro{\xprev}{\csname xprev@#1\endcsname}%
-  \pgfmathsetmacro{\yprev}{\csname yprev@#1\endcsname}%
-  \pgfmathsetmacro{\angletot}{\angleprev + \theta}%
-  \pgfmathsetmacro{\xnew}{\xprev + (\a - #3) * cos(\angletot)}%
-  \pgfmathsetmacro{\ynew}{\yprev + (\a - #3) * sin(\angletot)}%
+% \brief Initialize pose
+% \param #1 : robot ID
+% \param #2 : robot's first link x-axis position
+% \param #3 : robot's first link y-axis position
+% \param #4 : robot's first link orientation
+\newcommand{\initializePose}[4]{%
+  \expandafter\def\csname robot@#1@xbase\endcsname{#2}%
+  \expandafter\def\csname robot@#1@ybase\endcsname{#3}%
+  \expandafter\def\csname robot@#1@xprev\endcsname{#2}%
+  \expandafter\def\csname robot@#1@yprev\endcsname{#3}%
+  \expandafter\def\csname robot@#1@angleprev\endcsname{#4}%
 }
 
-% Mettre à jour les coordonnées après chaque lien
-\newcommand{\updateRobotArmState}[1]{%
-  \expandafter\xdef\csname xprev@#1\endcsname{\xnew}%
-  \expandafter\xdef\csname yprev@#1\endcsname{\ynew}%
-  \expandafter\xdef\csname angleprev@#1\endcsname{\angletot}%
+% \brief Compute current link's pose
+% \param #1 : robot ID
+% \param #2 : link ID
+% \param #3 : link overlap
+\newcommand{\computeLinkPose}[3]{%
+
+  \edef\link@a{\csname robot@#1@#2@a\endcsname}%
+  \edef\link@theta{\csname robot@#1@#2@theta\endcsname}%
+
+  \edef\link@xprev{\csname robot@#1@xprev\endcsname}%
+  \edef\link@yprev{\csname robot@#1@yprev\endcsname}%
+  \edef\link@angleprev{\csname robot@#1@angleprev\endcsname}%
+  
+  \pgfmathsetmacro{\angletot}{\link@angleprev + \link@theta}%
+  \pgfmathsetmacro{\xnew}{\link@xprev + (\link@a - #3) * cos(\angletot)}%
+  \pgfmathsetmacro{\ynew}{\link@yprev + (\link@a - #3) * sin(\angletot)}%
 }
 
-% Dessiner un lien
-\newcommand{\drawArmLink}[5]{%
-  \computeArmLinkPosition{#1}{#2}{0.25}%
-  \pgfmathsetmacro{\theta}{\csname theta@#1@#2\endcsname}%
-  \pgfmathsetmacro{\a}{\csname a@#1@#2\endcsname}%
-  \pgfmathsetmacro{\midx}{(\xprev+\xnew)/2}%
-  \pgfmathsetmacro{\midy}{(\yprev+\ynew)/2}%
+% \brief Update pose
+% \param #1 : robot ID
+% \param #2 : new xprev value
+% \param #3 : new yprev value
+% \param #4 : new angleprev value
+\newcommand{\updatePose}[4]{%
+  \expandafter\xdef\csname robot@#1@xprev\endcsname{#2}%
+  \expandafter\xdef\csname robot@#1@yprev\endcsname{#3}%
+  \expandafter\xdef\csname robot@#1@angleprev\endcsname{#4}%
+}
 
-  \begin{scope}
-    \pgftransformshift{\pgfpoint{\midx cm}{\midy cm}}%
-    \pgftransformrotate{\angleprev + \theta}%
+% \brief Draw a robot link
+% \param #1 : robot ID
+% \param #2 : robot link ID
+% \param #3 : robot link color
+% \param #4 : is robot link shading
+% \param #5 : robot link thickness
+\newcommand{\drawLink}[5]{%
+
+  \edef\link@overlap{0.25}%
+  \edef\link@cornerRadius{3.5}%
+  \edef\link@xprev{\csname robot@#1@xprev\endcsname}%
+  \edef\link@yprev{\csname robot@#1@yprev\endcsname}%
+  \computeLinkPose{#1}{#2}{\link@overlap}%
+  
+  \pgfmathsetmacro{\link@xorigin}{(\link@xprev+\xnew)/2}%
+  \pgfmathsetmacro{\link@yorigin}{(\link@yprev+\ynew)/2}%
+
+  \begin{scope}[shift={(\link@xorigin,\link@yorigin)}, rotate={\angletot}]
+
     \ifthenelse{\equal{#4}{true}}{%
-      \shade[rounded corners=\linkCornerRadius, left color=#3!80, right color=#3!20, draw=black, line width=0.3pt] (-\a/2, -#5/2) rectangle (\a/2, #5/2);%
+      \shade[rounded corners=\link@cornerRadius, left color=#3!80, right color=#3!20, draw=black, line width=0.3pt] (-\link@a/2, -#5/2) rectangle (\link@a/2, #5/2);%
     }{%
-      \draw[rounded corners=\linkCornerRadius, fill=#3!60, draw=black, line width=0.3pt] (-\a/2, -#5/2) rectangle (\a/2, #5/2);%
+      \draw[rounded corners=\link@cornerRadius, fill=#3!60, draw=black, line width=0.3pt] (-\link@a/2, -#5/2) rectangle (\link@a/2, #5/2);%
     }%
   \end{scope}
-
-  \updateRobotArmState{#1}%
+%
+  \updatePose{#1}{\xnew}{\ynew}{\angletot}%
 }
 
-% Dessiner la base
-\newcommand{\drawArmBase}[3]{%
-  \draw[fill=gray!50, draw=black] (#2,#3) circle (#1);
+% \brief Draw a robot base
+% \param #1 : robot base x-axis position
+% \param #2 : robot base y-axis position
+% \param #3 : robot base radius
+\newcommand{\drawBase}[3]{%
+  \draw[fill=gray!50, draw=black] (#1,#2) circle (#3);
 }
 
 % Dessiner une pince
-\newcommand{\drawArmGripper}[1]{%
-  \pgfmathsetmacro{\gripperSize}{0.1}%
-  \pgfmathsetmacro{\gripperLength}{0.5}%
-  \pgfmathsetmacro{\a}{0.4}%
+\newcommand{\drawTool}[1]{%
 
-  \pgfmathsetmacro{\angleprev}{\csname angleprev@#1\endcsname}%
-  \pgfmathsetmacro{\xprev}{\csname xprev@#1\endcsname}%
-  \pgfmathsetmacro{\yprev}{\csname yprev@#1\endcsname}%
+  \edef\tool@a{0.4}%
+  \edef\tool@theta{0}%
+  \edef\tool@size{0.1}%
+  \edef\tool@length{0.5}%
 
-  \pgfmathsetmacro{\xnew}{\xprev + (\a - \gripperSize) * cos(\angleprev)}%
-  \pgfmathsetmacro{\ynew}{\yprev + (\a - \gripperSize) * sin(\angleprev)}%
+  \edef\tool@angleprev{\csname robot@#1@angleprev\endcsname}%
+  \edef\tool@xprev{\csname robot@#1@xprev\endcsname}%
+  \edef\tool@yprev{\csname robot@#1@yprev\endcsname}%
 
-  \pgfmathsetmacro{\midx}{(\xprev+\xnew)/2}%
-  \pgfmathsetmacro{\midy}{(\yprev+\ynew)/2}%
+  \pgfmathsetmacro{\angletot}{\tool@angleprev + \tool@theta}%
+  \pgfmathsetmacro{\xnew}{\tool@xprev + (\tool@a - \tool@size) * cos(\angletot)}%
+  \pgfmathsetmacro{\ynew}{\tool@yprev + (\tool@a - \tool@size) * sin(\angletot)}%
 
-  \begin{scope}
-    \pgftransformshift{\pgfpoint{\midx cm}{\midy cm}}%
-    \pgftransformrotate{\angleprev}%
-    \draw[fill=gray!50, draw=black, line width=0.3pt] (-\gripperSize/2, -\gripperLength/2) rectangle (\gripperSize/2, \gripperLength/2);%
-    \draw[fill=gray!50, draw=black, line width=0.3pt] (\gripperSize/2, -\gripperLength/2+0.05) rectangle (\gripperSize/2+0.3, -\gripperLength/2+0.15);%
-    \draw[fill=gray!50, draw=black, line width=0.3pt] (\gripperSize/2, \gripperLength/2-0.05) rectangle (\gripperSize/2+0.3, \gripperLength/2-0.15);%
+  \pgfmathsetmacro{\tool@xorigin}{(\tool@xprev+\xnew)/2}%
+  \pgfmathsetmacro{\tool@yorigin}{(\tool@yprev+\ynew)/2}%
+
+  \begin{scope}[shift={(\tool@xorigin,\tool@yorigin)}, rotate={\angletot}]
+    \draw[fill=gray!50, draw=black, line width=0.3pt] (-\tool@size/2, -\tool@length/2) rectangle (\tool@size/2, \tool@length/2);%
+    \draw[fill=gray!50, draw=black, line width=0.3pt] (\tool@size/2, -\tool@length/2+0.05) rectangle (\tool@size/2+0.3, -\tool@length/2+0.15);%
+    \draw[fill=gray!50, draw=black, line width=0.3pt] (\tool@size/2, \tool@length/2-0.05) rectangle (\tool@size/2+0.3, \tool@length/2-0.15);%
   \end{scope}%
 
-  \expandafter\xdef\csname xprev@#1\endcsname{\xnew}%
-  \expandafter\xdef\csname yprev@#1\endcsname{\ynew}%
-  \expandafter\xdef\csname angleprev@#1\endcsname{\angleprev}%
+  \updatePose{#1}{\xnew}{\ynew}{\angletot}%
+
 }
 
-% Dessin complet d’un robot
-\newcommand{\drawRobotArm}[1][]{%
-  % Récupération des paramètres via les clés /robot:
-  %   \id, \x, \y, \nJoints, \linkColor, \isShading, \isTool,
-  %   \isWorkspace, \workspaceRadius
-  \pgfkeys{/robot, #1}%
-  \initRobotArm{\id}{\x}{\y}%
-  \drawArmBase{\robotBaseRadius}{\x}{\y}%
+% \brief Draw a robotic arm given a specific ID definition
+% \param #1 : robot ID
+% \param #2 : robot x-axis position
+% \param #3 : robot y-axis position
+% \param #4 : robot orientation [in degrees]
+\newcommand{\drawArm}[4]{%
+
+  \drawRobot{arm@#1}{#2}{#3}{#4}
+  \edef\arm@nLinks{\csname robot@arm@#1@nLinks\endcsname}%
+  \edef\arm@isShading{\csname robot@arm@#1@isShading\endcsname}
+  \edef\arm@isTool{\csname robot@arm@#1@isTool\endcsname}
+  \edef\arm@isWorkspace{\csname robot@arm@#1@isWorkspace\endcsname}
+
+  \edef\arm@linkThickness{0.4}%
   
-  % Initialisation d'une variable globale pour calculer le rayon total
-  \xdef\radiusAuto{0}%
-  
-  \foreach \i in {1,...,\nJoints} {%
-    \pgfmathsetmacro{\a}{\csname a@\id @\i\endcsname}%
-    \pgfmathparse{\radiusAuto + \a}%
-    \xdef\radiusAuto{\pgfmathresult}%
-    \drawArmLink{\id}{\i}{\linkColor}{\isShading}{\linkThickness}%
-  }%
-  
-  % Dessiner la pince si activée
-  \ifthenelse{\equal{\isTool}{true}}{%
-    \drawArmGripper{\id}%
-  }{}%
-  
-  % Dessiner le workspace s'il est activé, en sélectionnant le rayon approprié
-  \ifthenelse{\equal{\isWorkspace}{true}}{%
-    \pgfmathparse{\workspaceRadius == 0 ? \radiusAuto : \workspaceRadius}%
-    \let\radiusToUse\pgfmathresult%
-    \draw[gray, dashed] (\x,\y) circle (\radiusToUse);%
-  }{}%
+  % Draw robotic arm
+  \begin{scope}[shift={(\item@x,\item@y)}, rotate=\item@orientation]
+
+    \edef\arm@baseRadius{0.35}%
+    \drawBase{0}{0}{\arm@baseRadius}
+
+
+    \initializePose{arm@#1}{0}{0}{0}%
+    \foreach \linkID in {1,...,\arm@nLinks} {%
+      \drawLink{arm@#1}{\linkID}{\item@color}{\arm@isShading}{\arm@linkThickness}%
+    }%
+
+    \ifthenelse{\equal{\arm@isTool}{true}}{%
+          \drawTool{arm@#1}
+    }
+    {}
+
+    
+      
+  \end{scope}%
 }
 
 \makeatother
